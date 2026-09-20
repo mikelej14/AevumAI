@@ -56,8 +56,8 @@ python tools\setup_probe.py --require-runtime-deps || goto :verify_fail
 echo.
 echo ============================================================
 echo Setup complete.
-echo Run RUN.bat, open Settings, select the Granite/Executive GGUF and optionally a semantic Qwen GGUF,
-echo then click Start model.
+echo Run RUN.bat and follow Quick start to select your Granite GGUF.
+echo Click Save and load models, wait for Ready, then Open chat. See QUICKSTART.md.
 echo ============================================================
 pause
 exit /b 0

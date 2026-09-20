@@ -8,6 +8,7 @@ The intended model pairing is **IBM Granite 4.2 3B** for conversation and reason
 
 ## Features
 
+- **Guided first run.** Quick start opens when the main model is missing, with download links, model selection, and one Save & load models button.
 - **Local AI conversation.** Run GGUF models on your own computer, with streaming responses, multiple chats, and model start/stop controls.
 - **Persistent neural memory.** Store conversations and imported text as compact neural engrams, retaining speaker, time, and source information.
 - **Recall when it matters.** Relevant memory hints help the assistant decide when to retrieve complete stored documents.
@@ -80,6 +81,14 @@ The Granite Q6_K file is approximately 3 GB on disk, but **download size is not 
 
 If a model fails to load because memory is exhausted, close other GPU-heavy applications, reduce the configured context size or GPU offload, use a smaller quantization, or leave the optional Qwen annotator disabled. Those choices trade capacity or speed for a smaller memory footprint.
 
+## Quick start: your first conversation
+
+Follow the [step-by-step quick-start guide](QUICKSTART.md) for installation, model downloads, first launch, and troubleshooting.
+
+After installation, open Aevum and use **Quick start → Browse** to select `granite-4.2-3b-Q6_K.gguf`. Leave Qwen disabled for the simplest first run. Click **Save & load models**, wait for **Ready**, then click **Open chat**. Quick start opens automatically when no usable Executive model is configured and remains available in the sidebar.
+
+Prefer Settings? Choose the model under **Models**, scroll to the **bottom**, and click **Save + reload model**. **Save settings** alone does not load the model. On later launches, click **Start model** and wait for **Ready**.
+
 ## Getting started on Windows
 
 Setup files are named for each platform: `Windows-Setup.bat`, `macOS-Setup.command`, and `Linux-Setup.sh`. Follow the section for your operating system below.
@@ -113,7 +122,7 @@ Run `RUN.bat`, open **Settings**, and:
 
 1. Select `granite-4.2-3b-Q6_K.gguf` under **Executive**.
 2. Optionally select a Qwen3.5-2B GGUF under **Semantic Annotator** and enable it.
-3. Save your settings and click **Start model**.
+3. Scroll to the bottom and click **Save + reload model**. Wait for **Ready**, then open **Chat**.
 
 Start a conversation, or use **Memory → Import text / Markdown** to add material for later recall.
 
@@ -132,7 +141,7 @@ The installer creates a local virtual environment and selects **Metal on Apple S
 
 On Apple Silicon, use native arm64 Python rather than running under Rosetta. To request CPU-only installation, run `bash macOS-Setup.command --cpu`. To choose a particular Python installation, use `AEVUM_PYTHON=/path/to/python3 bash macOS-Setup.command`.
 
-After launching, select the Executive and optional Semantic Annotator models in Settings, save, and click **Start model**. Keep the project in a writable folder so Aevum can save settings and memory.
+After launching, follow **Quick start** to select the models, click **Save & load models**, and wait for **Ready**. Keep the project in a writable folder so Aevum can save settings and memory.
 
 ## Getting started on Linux
 
@@ -147,7 +156,7 @@ bash Linux-Run.sh
 
 The Linux installer creates a local virtual environment and installs the **CPU backend**, trying a prebuilt wheel before falling back to a source build. It does not install system packages or require sudo itself. To choose a particular Python installation, use `AEVUM_PYTHON=/path/to/python3 bash Linux-Setup.sh`.
 
-In Settings, select the Granite GGUF and optional Qwen GGUF, save, and click **Start model**. This installer provides CPU inference; Linux GPU backend installation is not automated.
+In **Quick start**, select the Granite GGUF and optional Qwen GGUF, click **Save & load models**, and wait for **Ready**. This installer provides CPU inference; Linux GPU backend installation is not automated.
 
 The macOS and Linux scripts are newly added. Script checks cover installation branches and failure handling; full GUI and model-runtime validation on those operating systems is still pending.
 

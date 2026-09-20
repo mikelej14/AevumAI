@@ -1,5 +1,13 @@
 # Aevum AI Changelog
 
+## Unreleased — Guided setup and platform installers
+
+- Added a Quick start page that opens when the local Executive model is missing, with model download links, shared Settings selections, and a Save & load models action.
+- Added model-file validation, visible loading/ready/error states, and protection against overlapping model loads.
+- Added macOS Metal/CPU and Linux CPU setup and launch scripts; renamed Windows installers to identify the platform.
+- Reworked the README around the product, intended Granite/Qwen models, hardware planning, and platform setup; added QUICKSTART.md.
+- Added installer flow and Tk UI regression checks. Full macOS/Linux GUI and model-runtime validation is pending.
+
 ## 0.2.4 — Pretrained Neural Vocabulary
 
 - Expanded the shipped read-only neural vocabulary to **10,000 frequency-ranked English words**, **224 additional Aevum conversational/technical supplement words**, and **28 punctuation/digit tokens**: 10,252 active labels total.

@@ -18,7 +18,8 @@ python -c "import llama_cpp; print('llama-cpp-python', getattr(llama_cpp, '__ver
 python -m pip install -r requirements.txt || goto :fail
 python tools\setup_probe.py --require-runtime-deps || goto :fail
 echo.
-echo Setup complete. This environment is CPU-only. Configure the Executive and optional semantic annotator in Settings.
+echo Setup complete. This environment is CPU-only. Run RUN.bat and follow Quick start.
+echo Select Granite, save and load models, then wait for Ready. See QUICKSTART.md.
 pause
 exit /b 0
 :fail

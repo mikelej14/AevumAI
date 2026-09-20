@@ -55,4 +55,4 @@ if ! "$py" -m pip install --upgrade --force-reinstall --only-binary=:all: \
 fi
 "$py" -m pip install -r requirements.txt
 "$py" tools/setup_probe.py --require-runtime-deps
-printf '\nSetup complete. Run: bash macOS-Run.command\nSelect your Granite GGUF and optional Qwen GGUF in Settings, then Start model.\n'
+printf '\nSetup complete. Run: bash macOS-Run.command\nFollow Quick start, select Granite, and click Save & load models. Wait for Ready. See QUICKSTART.md.\n'

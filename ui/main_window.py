@@ -19,6 +19,7 @@ from core.qwen35_profile import apply_sampler_profile
 from .assets import AssetBank
 from .chat_widgets import AssistantTurnView, ChatTranscript
 from .neural_minimap import NeuralMiniMap
+from .quickstart import QuickStartPanel, model_file_error, needs_model_setup
 from .theme import (
     ACCENT, ACCENT_DARK, ACCENT_GLOW, BG, BORDER, BORDER_BRIGHT, BORDER_SOFT, ERROR, FONT, FONT_MONO, FONT_SECTION, FONT_SMALL, FONT_TITLE,
     SIDEBAR, SIDEBAR_2, SHADOW, SHADOW_SOFT, SUCCESS, SURFACE, SURFACE_2, SURFACE_3, SURFACE_4, TEXT, TEXT_DIM, TEXT_MUTED,
@@ -56,6 +57,7 @@ class MainWindow:
         self._img: Dict[str, tk.PhotoImage] = {}
         self.uiq: queue.Queue = queue.Queue()
         self.busy = False
+        self.models_loading = False
         self.streaming = False
         self.current_assistant: AssistantTurnView | None = None
         self.current_chat_id = self.chats.active_chat_id()
@@ -81,13 +83,15 @@ class MainWindow:
         self._refresh_state()
         self._refresh_memory()
         self._refresh_status()
+        if needs_model_setup(self.config):
+            self.show_page("quickstart")
         self.root.after(80, self._poll_uiq)
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
         if getattr(self.chats, "warning", ""):
             self.root.after(250, lambda: messagebox.showwarning("Chat recovery", self.chats.warning))
         self.root.after(450, self._reconcile_chat_memory)
-        if self.config["runtime"].get("auto_start_models"):
+        if self.config["runtime"].get("auto_start_models") and not needs_model_setup(self.config):
             self.start_models()
 
     # ---------- shell / theme ----------
@@ -106,7 +110,7 @@ class MainWindow:
         self.content = tk.Frame(self.main, bg=BG)
         self.content.pack(fill="both", expand=True)
 
-        for key in ("chat", "state", "memory", "activity", "settings"):
+        for key in ("chat", "state", "memory", "activity", "settings", "quickstart"):
             frame = tk.Frame(self.content, bg=BG)
             self.pages[key] = frame
             frame.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -122,6 +126,13 @@ class MainWindow:
         self._build_memory()
         self._build_activity()
         self._build_settings()
+        self.quickstart = QuickStartPanel(
+            self.pages["quickstart"], model_vars=self.model_entries,
+            annotator_var=self.annotator_enabled_var, browse=self._browse_model,
+            load=self._quickstart_load, chat=lambda: self.show_page("chat"),
+            settings=lambda: self.show_page("settings"),
+        )
+        self.quickstart.pack(fill="both", expand=True)
         self.show_page("chat")
 
     def _build_sidebar(self):
@@ -175,6 +186,7 @@ class MainWindow:
         nav = tk.Frame(self.sidebar, bg=SIDEBAR)
         nav.pack(fill="x", padx=8, pady=(0, 8))
         nav_items = (
+            ("quickstart", "AevumAI-Settings_20x20.png", "Quick start"),
             ("chat", "AevumAI-Chat_20x20.png", "Chat"),
             ("state", "AevumAI-State_20x20.png", "Cognitive state"),
             ("memory", "AevumAI-Memory_20x20.png", "Memory"),
@@ -256,7 +268,9 @@ class MainWindow:
         if key not in self.pages:
             return
         self.pages[key].tkraise()
+        self.current_page = key
         labels = {
+            "quickstart": ("Welcome to Aevum", "Choose a model · Save and load · Start a conversation"),
             "chat": (self._active_chat_title(), "Persistent conversation with neural continuity"),
             "state": ("Cognitive state", "Optional semantic context layered over raw neural memory"),
             "memory": ("Neural memory", "Search and inspect persistent compact neural experience"),
@@ -691,6 +705,9 @@ class MainWindow:
     # ---------- chat execution ----------
     def send_message(self):
         if self.busy: return
+        if self.models_loading:
+            self.show_page("quickstart")
+            return
         text = self.input.get("1.0", "end").strip()
         if not text: return
         provider = str((self.config.get("chat") or {}).get("provider", "local_gguf") or "local_gguf")
@@ -746,23 +763,50 @@ class MainWindow:
             self.scheduler.cancel(); self.status_var.set("Stopping…")
 
     # ---------- model lifecycle ----------
-    def start_models(self):
-        if self.busy: return
+    def _quickstart_load(self):
+        if self.busy or self.models_loading:
+            return
+        self.provider_var.set("local_gguf")
+        self.save_settings(reload_models=True)
+
+    def _set_models_loading(self, loading: bool):
+        self.models_loading = loading
+        self.start_models_btn.configure(state="disabled" if loading else "normal")
+        self.stop_models_btn.configure(state="disabled" if loading else "normal")
+        self.quickstart.set_loading(loading)
+
+    def _load_models_async(self, operation):
+        self._set_models_loading(True)
         self.status_var.set("Loading model…")
         self._img["model_status"] = self.assets.image("AevumAI-Indicator-Load_18x18.png")
         self.status_dot.configure(image=self._img["model_status"])
-        self._activity("Starting Granite Executive and optional semantic annotator…")
-        def run(): self.uiq.put(("models_started", self.pool.start()))
+        def run():
+            try:
+                errors = operation()
+            except Exception as exc:
+                errors = {"executive": str(exc)}
+            self.uiq.put(("models_started", errors))
         threading.Thread(target=run, name="model-loader", daemon=True).start()
 
+    def start_models(self):
+        if self.busy or self.models_loading: return
+        if needs_model_setup(self.config):
+            self.show_page("quickstart")
+            self.quickstart.set_result(False, "Choose your Executive GGUF, then click Save & load models.")
+            return
+        self._activity("Starting Granite Executive and optional semantic annotator…")
+        self._load_models_async(self.pool.start)
+
     def stop_models(self):
+        if self.models_loading: return
         self.pool.stop_all()
+        self.quickstart.set_result(False)
         self._refresh_status()
         self._activity("Model workers stopped.")
 
     def _refresh_status(self):
         statuses = self.pool.statuses()
-        if self.busy:
+        if self.busy or self.models_loading:
             return
         ex = statuses.get("executive", {})
         ann = statuses.get("annotator", {})
@@ -911,9 +955,20 @@ class MainWindow:
         threading.Thread(target=run, name="neural-memory-search", daemon=True).start()
 
     def save_settings(self, reload_models: bool = False):
+        if self.busy or self.models_loading:
+            return
         try:
+            if reload_models and self.provider_var.get() == "local_gguf":
+                error = model_file_error(self.model_entries["executive"].get())
+                if not error and self.annotator_enabled_var.get():
+                    error = model_file_error(self.model_entries["annotator"].get(), "optional Qwen")
+                if error:
+                    self.show_page("quickstart")
+                    self.quickstart.set_result(False, error)
+                    return
             for role, var in self.model_entries.items():
-                self.config["models"][role]["path"] = var.get().strip()
+                raw_path = var.get().strip()
+                self.config["models"][role]["path"] = str(Path(raw_path).expanduser()) if raw_path else ""
             ex = self.config["models"]["executive"]
             ex["n_ctx"] = int(self.setting_vars["executive_ctx"].get())
             ex["n_gpu_layers"] = int(self.setting_vars["executive_gpu"].get())
@@ -968,13 +1023,12 @@ class MainWindow:
             self.pool.model_configs = self.config["models"]
             self.memory.chunk_tokens = self.config["memory"]["chunk_tokens"]
             if reload_models:
-                self.status_var.set("Reloading model…")
-                self._img["model_status"] = self.assets.image("AevumAI-Indicator-Load_18x18.png")
-                self.status_dot.configure(image=self._img["model_status"])
-                threading.Thread(target=lambda: self.uiq.put(("models_started", self.pool.reload(self.config["models"]))), daemon=True).start()
+                self._load_models_async(lambda: self.pool.reload(self.config["models"]))
             else:
                 messagebox.showinfo("Settings", "Settings saved. Reload the model for GGUF/runtime model changes to take effect.")
         except Exception as exc:
+            if self.current_page == "quickstart":
+                self.quickstart.set_result(False, str(exc))
             messagebox.showerror("Settings error", str(exc))
 
     def _poll_uiq(self):
@@ -1050,7 +1104,8 @@ class MainWindow:
                     self.current_assistant = None
                     self._activity(f"TURN ERROR: {payload}")
                 elif kind == "models_started":
-                    errors = item[1]
+                    errors = item[1] or {}
+                    self._set_models_loading(False)
                     if errors:
                         self._activity("Model startup issues: " + json.dumps(errors, ensure_ascii=False, default=str))
                         # Executive failure matters; annotator failure is a warning only.
@@ -1062,6 +1117,10 @@ class MainWindow:
                     for role, st in statuses.items():
                         self._activity(f"{role}: loaded={bool(st.get('loaded'))} · arch={st.get('architecture') or '?'} · preset={st.get('preset_label') or '?'} · ctx={st.get('context') or '?'} · gpu_layers={st.get('gpu_layers')}")
                     est = statuses.get("executive", {})
+                    self.quickstart.set_result(
+                        bool(est.get("loaded")), str(errors.get("executive", "")),
+                        annotator_unavailable="annotator" in errors,
+                    )
                     if est.get("loaded") and hasattr(self, "executive_detected_var"):
                         self.executive_detected_var.set(f"Executive preset: {est.get('preset_label') or 'Generic GGUF'} · metadata architecture: {est.get('architecture') or '?'}")
                         if self.executive_sampler_var.get() == "auto":
@@ -1152,4 +1211,3 @@ class MainWindow:
             self.scheduler.cancel(); self.scheduler.shutdown(); self.pool.stop_all()
         finally:
             self.root.destroy()
-
