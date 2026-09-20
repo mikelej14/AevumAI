@@ -1,0 +1,77 @@
+[
+  {
+    "token": "ENGAGED",
+    "rank": 1368,
+    "count": 87,
+    "reason": "internal_silence",
+    "internal_silences": [
+      {
+        "last_active_ms": 88,
+        "next_active_ms": 128,
+        "silence_ms": 39
+      }
+    ],
+    "duration_ms": 258,
+    "prototype_id": "f1cccf9e3d735b17068b3fd40e84c10a876bb26df3438d6c213c1bd38e2c6324"
+  },
+  {
+    "token": "ENGAGEMENT",
+    "rank": 2416,
+    "count": 48,
+    "reason": "internal_silence",
+    "internal_silences": [
+      {
+        "last_active_ms": 88,
+        "next_active_ms": 128,
+        "silence_ms": 39
+      }
+    ],
+    "duration_ms": 339,
+    "prototype_id": "1d44195ec0796fcb2b0c913a148442f10fe3b86bbe667e197394b66bb8aa5025"
+  },
+  {
+    "rank": 6592,
+    "count": 13,
+    "token": "ENCAPSULATED",
+    "internal_silences": [
+      {
+        "last_active_ms": 88,
+        "next_active_ms": 128,
+        "silence_ms": 39
+      }
+    ],
+    "duration_ms": 410,
+    "prototype_id": "ebd06c5985d5a1b287c64579be1855e586df065c678dcb95082dfeb62609c4c1",
+    "reason": "internal_silence"
+  },
+  {
+    "rank": 8284,
+    "count": 9,
+    "token": "ENGAGE",
+    "internal_silences": [
+      {
+        "last_active_ms": 88,
+        "next_active_ms": 128,
+        "silence_ms": 39
+      }
+    ],
+    "duration_ms": 186,
+    "prototype_id": "f8a38eb1c5b3ac189f46ba111cc4db8cafea448a6cd4159f68678a19413012ab",
+    "reason": "internal_silence"
+  },
+  {
+    "rank": 9588,
+    "count": 7,
+    "token": "ENGAGING",
+    "internal_silences": [
+      {
+        "last_active_ms": 88,
+        "next_active_ms": 128,
+        "silence_ms": 39
+      }
+    ],
+    "duration_ms": 282,
+    "prototype_id": "d8f1c735ccdcb3789dce260b215dee30e901f005566f47a1ff9625fdcb4c6798",
+    "reason": "internal_silence"
+  }
+]

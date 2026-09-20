@@ -1,0 +1,8 @@
+# Pure-Python/runtime support packages.
+#
+# IMPORTANT: llama-cpp-python is intentionally NOT listed here because Aevum's
+# Windows setup chooses the Vulkan or CPU wheel explicitly. Installing a generic
+# llama-cpp-python from PyPI after SETUP.bat can silently replace the working
+# Vulkan backend.
+openai>=2.0,<3
+pytest>=8,<10
