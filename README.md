@@ -2,7 +2,7 @@
 
 **A local desktop AI assistant with persistent neural memory.**
 
-Aevum AI brings conversation, long-term memory, and web tools into a Windows desktop app. It is built for ongoing conversations: recent messages provide immediate context, while a persistent memory system lets the assistant retrieve older conversations and imported material when they are relevant.
+Aevum AI brings conversation, long-term memory, and web tools into a desktop app. It is built for ongoing conversations: recent messages provide immediate context, while a persistent memory system lets the assistant retrieve older conversations and imported material when they are relevant.
 
 The intended model pairing is **IBM Granite 4.2 3B** for conversation and reasoning, with **Qwen3.5-2B** as an optional semantic annotator. Aevum's MicroBrain memory engine handles storage and recall independently of those language models.
 
@@ -65,7 +65,24 @@ The Memory page opens with metadata rather than decoding the entire collection i
 
 Visible chat history and neural memory have separate lifecycles: **deleting a chat removes its visible transcript/session but does not erase its stored neural memories.** At startup, Aevum also checks for transcript messages that were not archived before an interrupted session and attempts to recover them into memory.
 
+## System requirements and memory planning
+
+**Plan for roughly 6 GB of GPU memory just to run the intended Granite 4.2 3B Q6_K configuration. An 8 GB or larger GPU is recommended for headroom.** A GPU with 6 GB total VRAM may have too little free memory once the desktop and other applications are using it.
+
+The Granite Q6_K file is approximately 3 GB on disk, but **download size is not runtime memory usage**. Model weights, the context/KV cache, compute buffers, and backend overhead all contribute. Longer context settings can increase memory use. The 6 GB figure is a planning estimate for the intended setup, not a fixed allocation or a guarantee for every device.
+
+- **System RAM:** 16 GB is a practical starting recommendation; 32 GB is preferable when running both models, using CPU inference, keeping large histories, or multitasking. These are planning recommendations rather than benchmarked minimums.
+- **Windows GPU inference:** use a Vulkan-capable GPU with current drivers. Budget approximately 6 GB of free VRAM for Granite, with 8 GB or more total VRAM recommended. The default optional Qwen annotator runs on the CPU and needs additional system RAM.
+- **Apple Silicon:** Metal uses unified memory shared by the GPU, CPU, and macOS. The Granite memory budget comes out of that shared pool. Prefer at least 16 GB unified memory; 24–32 GB provides more room for Qwen and other applications. An 8 GB Mac is not a recommended target for the intended two-model setup.
+- **CPU-only use:** a dedicated GPU is optional. Model weights and runtime buffers use system RAM instead, and response speed depends heavily on the CPU and memory bandwidth. The Linux installer and Intel Mac setup use this mode by default.
+- **Disk space:** allow around 20 GB free as a starting budget for model downloads, the Python environment, the vocabulary pack, and working space. Additional quantizations, source builds, and growing personal memory need more storage.
+- **Runtime:** 64-bit Python 3.10+ with Tkinter; Python 3.11 or 3.12 is recommended by the setup workflow. Linux requires a graphical desktop session. Internet access is needed for installation, model downloads, and web tools.
+
+If a model fails to load because memory is exhausted, close other GPU-heavy applications, reduce the configured context size or GPU offload, use a smaller quantization, or leave the optional Qwen annotator disabled. Those choices trade capacity or speed for a smaller memory footprint.
+
 ## Getting started on Windows
+
+Setup files are named for each platform: `Windows-Setup.bat`, `macOS-Setup.command`, and `Linux-Setup.sh`. Follow the section for your operating system below.
 
 ### 1. Get the project and vocabulary
 
@@ -84,9 +101,9 @@ The pretrained vocabulary is stored through Git LFS. Use an LFS-enabled clone to
 
 Install **64-bit Python 3.10 or newer**, including Tkinter, and make Python available on PATH. The setup script recommends Python 3.11 or 3.12 for prebuilt-wheel compatibility.
 
-Run `SETUP.bat` for the Vulkan-oriented Windows setup. It creates a virtual environment, installs the runtime and support packages, and checks the installation. If a compatible Vulkan wheel is unavailable, the source-build fallback requires Microsoft C++ Build Tools and the Vulkan SDK.
+Run `Windows-Setup.bat` for the Vulkan-oriented Windows setup. It creates a virtual environment, installs the runtime and support packages, and checks the installation. If a compatible Vulkan wheel is unavailable, the source-build fallback requires Microsoft C++ Build Tools and the Vulkan SDK.
 
-For a CPU-only installation, use `SETUP_CPU_ONLY.bat`. Actual speed and memory requirements depend on the selected models, quantization, context size, and hardware.
+For a CPU-only installation, use `Windows-Setup-CPU-Only.bat`. Actual speed and memory requirements depend on the selected models, quantization, context size, and hardware.
 
 ### 3. Select your models
 
@@ -99,6 +116,40 @@ Run `RUN.bat`, open **Settings**, and:
 3. Save your settings and click **Start model**.
 
 Start a conversation, or use **Memory → Import text / Markdown** to add material for later recall.
+
+## Getting started on macOS
+
+Use the same Git LFS clone steps and model downloads above. Install a **64-bit Python 3.11 or 3.12 from [python.org](https://www.python.org/downloads/macos/)**; its macOS installers include [Tkinter](https://www.python.org/download/mac/tcltk/).
+
+In Terminal, from the project directory:
+
+```bash
+bash macOS-Setup.command
+bash macOS-Run.command
+```
+
+The installer creates a local virtual environment and selects **Metal on Apple Silicon** or **CPU on Intel Macs**. It first tries a prebuilt runtime wheel, then a source build if needed. For the source-build fallback, install Apple's Command Line Tools with `xcode-select --install` and rerun setup. The backend installation follows the [llama-cpp-python installation guide](https://github.com/abetlen/llama-cpp-python#installation).
+
+On Apple Silicon, use native arm64 Python rather than running under Rosetta. To request CPU-only installation, run `bash macOS-Setup.command --cpu`. To choose a particular Python installation, use `AEVUM_PYTHON=/path/to/python3 bash macOS-Setup.command`.
+
+After launching, select the Executive and optional Semantic Annotator models in Settings, save, and click **Start model**. Keep the project in a writable folder so Aevum can save settings and memory.
+
+## Getting started on Linux
+
+Use the same Git LFS clone steps and model downloads above. Aevum needs a **graphical desktop session**, **64-bit Python 3.10+**, Tkinter, and Python's venv support. Install those prerequisites through your distribution's package manager. On Debian/Ubuntu, the packages are `python3`, `python3-venv`, and `python3-tk`; `build-essential` is needed if the runtime must be built from source.
+
+From the project directory:
+
+```bash
+bash Linux-Setup.sh
+bash Linux-Run.sh
+```
+
+The Linux installer creates a local virtual environment and installs the **CPU backend**, trying a prebuilt wheel before falling back to a source build. It does not install system packages or require sudo itself. To choose a particular Python installation, use `AEVUM_PYTHON=/path/to/python3 bash Linux-Setup.sh`.
+
+In Settings, select the Granite GGUF and optional Qwen GGUF, save, and click **Start model**. This installer provides CPU inference; Linux GPU backend installation is not automated.
+
+The macOS and Linux scripts are newly added. Script checks cover installation branches and failure handling; full GUI and model-runtime validation on those operating systems is still pending.
 
 ## Local data and connectivity
 

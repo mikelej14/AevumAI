@@ -175,7 +175,7 @@ class OpenAIChatRuntime:
         try:
             from openai import OpenAI
         except Exception as exc:
-            raise OpenAIUnavailable("The openai Python package is not installed. Run SETUP.bat.") from exc
+            raise OpenAIUnavailable("The openai Python package is not installed. Run the setup script for your operating system.") from exc
 
         client = OpenAI(api_key=self.api_key)
         input_list = [

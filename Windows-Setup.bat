@@ -82,7 +82,7 @@ echo.
 echo ERROR: The official Vulkan wheel was unavailable AND the fallback source build failed.
 echo The original Windows path-length problem has been bypassed by using "%AEVUM_SHORT_TEMP%".
 echo If the error above now mentions Vulkan, CMake, MSVC, cl.exe, or a compiler,
-echo install the Vulkan SDK and Microsoft C++ Build Tools, then rerun SETUP.bat.
+echo install the Vulkan SDK and Microsoft C++ Build Tools, then rerun Windows-Setup.bat.
 goto :fail
 
 :verify_fail

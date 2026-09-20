@@ -13,7 +13,7 @@ def test_setup_contract_and_optional_annotator():
     assert DEFAULT_CONFIG["models"]["executive"]["n_gpu_layers"] == -1
     req = (ROOT / "requirements.txt").read_text(encoding="utf-8")
     assert "llama-cpp-python==" not in req
-    setup = (ROOT / "SETUP.bat").read_text(encoding="utf-8")
+    setup = (ROOT / "Windows-Setup.bat").read_text(encoding="utf-8")
     assert "whl/vulkan" in setup
     assert "AEVUM_BUILD" in setup
     assert "tools\\setup_probe.py --require-runtime-deps" in setup
