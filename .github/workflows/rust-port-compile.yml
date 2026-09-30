@@ -1,0 +1,27 @@
+name: Rust Port Compile Check
+
+on:
+  push:
+    branches:
+      - rust-full-port-dev
+    paths:
+      - "rust_ci_chunks/**"
+      - "rust_port_ci_bootstrap.sh"
+      - ".github/workflows/rust-port-compile.yml"
+  workflow_dispatch:
+
+jobs:
+  compile:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Compile and test native Rust port
+        shell: bash
+        run: bash rust_port_ci_bootstrap.sh
