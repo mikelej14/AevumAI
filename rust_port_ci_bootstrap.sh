@@ -15,6 +15,13 @@ for path in Path("crates").rglob("*.rs"):
     fixed = pattern.sub(lambda m: m.group("prefix") + m.group("ws") + "0.", text)
     if fixed != text:
         path.write_text(fixed)
+
+# Temporary CI compatibility patches; corresponding fixes are already in the working source.
+speaker = Path("crates/aevum-core/src/speaker.rs")
+text = speaker.read_text()
+text = text.replace("let cfg=&graph.cfg;let width=cfg.probe_channels*3;", "let cfg=&graph.cfg.clone();let width=cfg.probe_channels*3;")
+text = text.replace("pub(crate) struct AdamVector{m:Vec<f32>,v:Vec<f32>}", "pub(crate) struct AdamVector{pub(crate) m:Vec<f32>,pub(crate) v:Vec<f32>}")
+speaker.write_text(text)
 PY
 cargo fmt --all
 cargo check --workspace --lib --bins
