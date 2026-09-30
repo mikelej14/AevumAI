@@ -9,7 +9,7 @@ cd rust-ci-work
 python - <<'PY'
 from pathlib import Path
 import re
-pattern = re.compile(r'(?P<prefix>^|[=(:,\[\{+*/%!<>?&|;\-])(?P<ws>\s*)\.(?=\d)')
+pattern = re.compile(r'(?P<prefix>^|[=(:,\[\{+*/%!<>&|;\-])(?P<ws>\s*)\.(?=\d)')
 for path in Path("crates").rglob("*.rs"):
     text = path.read_text()
     fixed = pattern.sub(lambda m: m.group("prefix") + m.group("ws") + "0.", text)
