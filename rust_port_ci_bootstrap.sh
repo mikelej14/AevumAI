@@ -25,7 +25,7 @@ speaker.write_text(text)
 
 expert = Path("crates/aevum-core/src/expert.rs")
 text = expert.read_text().replace("config::Config,", "")
-expert.write_text(text)
+text = text.replace("mod tests {\\n    use super::*;", "mod tests {\\n    use super::*;\\n    use crate::config::Config;")\nexpert.write_text(text)
 
 integrated = Path("crates/aevum-core/src/integrated.rs")
 text = integrated.read_text().replace("CoreState,CoreGrads,StateGrads", "CoreState,StateGrads")
@@ -50,10 +50,10 @@ if not text.startswith("#![allow(clippy::needless_range_loop)]"):
     lib.write_text("#![allow(clippy::needless_range_loop)]\n" + text)
 
 registry = Path("crates/aevum-format/src/brain_registry.rs")
-registry.write_text(registry.read_text().replace("fs::{self, File, OpenOptions}", "fs::{self, OpenOptions}"))
+registry.write_text(registry.read_text().replace("fs::{self,File,OpenOptions}", "fs::{self,OpenOptions}").replace("fs::{self, File, OpenOptions}", "fs::{self, OpenOptions}"))
 
 brain_write = Path("crates/aevum-format/src/brain_write.rs")
-brain_write.write_text(brain_write.read_text().replace("io::{BufReader, BufWriter, Read, Write}", "io::{BufReader, BufWriter, Write}"))
+brain_write.write_text(brain_write.read_text().replace("io::{BufReader,BufWriter,Read,Write}", "io::{BufReader,BufWriter,Write}").replace("io::{BufReader, BufWriter, Read, Write}", "io::{BufReader, BufWriter, Write}"))
 
 native_training = Path("crates/aevum-format/src/native_training.rs")
 native_training.write_text(native_training.read_text().replace("let (mut grads,loss,_)", "let (grads,loss,_)"))
